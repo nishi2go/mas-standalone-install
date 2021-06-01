@@ -22,7 +22,6 @@ projectName="ibm-sls"
 if [ -z "${ENTITLEMENT_KEY}" ]; then
   echoRed "Missing entitlement key in environemnt variable ENTITLEMENT_KEY."
   exit 1
-  f
 fi
 
 status=$(oc whoami 2>&1)

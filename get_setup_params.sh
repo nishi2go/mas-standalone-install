@@ -35,11 +35,12 @@ oc get configmap mas-mongo-ce-cert-map -n mongo -o jsonpath='{.data.ca\.crt}'
 
 displayStepHeader 2 "BAS Setup Parameters"
 projectName="bas"
+echo "===========BAS Endpoint URL=============="
+echo https://$(oc get routes bas-endpoint -n "${projectName}" |awk 'NR==2 {print $2}')
+
 echo "===========API KEY=============="
 oc get secret bas-api-key -n "${projectName}" --output="jsonpath={.data.apikey}" | base64 -d
 echo ""
-echo "===========BAS Endpoint URL=============="
-echo https://$(oc get routes bas-endpoint -n "${projectName}" |awk 'NR==2 {print $2}')
 
 echo "===========Certificates=============="
 oc get secret event-api-certs -n "${projectName}" -o "jsonpath={.data.tls\.crt}" | base64 -d

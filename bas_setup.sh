@@ -12,11 +12,11 @@ mkdir -p "${WORK_DIR}"
 cp -r "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/"* "${WORK_DIR}/"
 
 if [ -z "${BAS_DB_PASSWORD}" ]; then
-  BAS_DB_PASSWORD=`openssl rand -base64 15`
+  BAS_DB_PASSWORD=`openssl rand -hex 15`
 fi
 
 if [ -z "${BAS_GRAFANA_PASSWORD}" ]; then
-  BAS_GRAFANA_PASSWORD=`openssl rand -base64 15`
+  BAS_GRAFANA_PASSWORD=`openssl rand -hex 15`
 fi
 
 cat <<EOF > "${WORK_DIR}/cr.properties"
