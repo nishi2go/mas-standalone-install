@@ -6,7 +6,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
 
 function stepLog() {
-  echo -e "STEP $1/5: $2"
+  echo -e "STEP $1/6: $2"
 }
 
 if [ -z "$MONGO_NAMESPACE" ]; then
@@ -71,4 +71,36 @@ displayStepHeader 5 "Install MongoDB Operator."
 cp "${SCRIPT_DIR}/mongodb/msi-mas_v1_mongodbcommunity_openshift_cr.yaml" "${WORK_DIR}/mongodb/config/mas-mongo-ce/mas_v1_mongodbcommunity_openshift_cr.yaml"
 
 cd "${WORK_DIR}/mongodb/"
-bash "${WORK_DIR}/mongodb/install-mongo-ce.sh" | tee -a "${logFile}"
+
+oc new-project ${MONGO_NAMESPACE}
+
+oc apply -f config/crd/mongodbcommunity.mongodb.com_mongodbcommunity.yaml -n ${MONGO_NAMESPACE}
+
+oc apply -k config/rbac/.  -n ${MONGO_NAMESPACE}
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:${MONGO_NAMESPACE}:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:${MONGO_NAMESPACE}:mongodb-kubernetes-operator
+
+oc create -f config/manager/manager.yaml -n ${MONGO_NAMESPACE}
+echo -n " - Waiting for MongoDB CE Operator  "
+while [[ $(oc get deployment mongodb-kubernetes-operator -n ${MONGO_NAMESPACE} -o 'jsonpath={..status.conditions[?(@.type=="Available")].status}') != "True" ]];do sleep 5s; done
+
+cd certs
+oc create configmap mas-mongo-ce-cert-map --from-file=ca.crt=ca.pem -n ${MONGO_NAMESPACE}
+oc create secret tls mas-mongo-ce-cert-secret --cert=server.crt --key=server.key -n ${MONGO_NAMESPACE}
+cd ..
+
+oc apply -f config/mas-mongo-ce/mas_v1_mongodbcommunity_openshift_cr.yaml -n ${MONGO_NAMESPACE}
+sleep 5s
+while [[ $(oc get statefulset mas-mongo-ce -n ${MONGO_NAMESPACE} --ignore-not-found -o 'jsonpath={..status.readyReplicas}') != "1" ]];do sleep 5s; done
+
+oc rollout restart statefulset mas-mongo-ce -n ${MONGO_NAMESPACE}
+sleep 5s
+
+displayStepHeader 6 "Enable SCRAM-SHA-1 Auth."
+JSON=$(oc get secret mas-mongo-ce-config -n ${MONGO_NAMESPACE} -o 'jsonpath={..data.cluster-config\.json}' | base64 -d  | jq -c '.auth.autoAuthMechanisms|=["SCRAM-SHA-256", "SCRAM-SHA-1"]' | jq -c '.auth.deploymentAuthMechanisms|=["SCRAM-SHA-256", "SCRAM-SHA-1"]' | base64 -w 0)
+
+oc patch secret mas-mongo-ce-config -n "${MONGO_NAMESPACE}" -p="{\"data\":{\"cluster-config.json\": \"${JSON}\"}}" -v=1
+oc rollout restart statefulset mas-mongo-ce -n "${MONGO_NAMESPACE}"
+sleep 10s
+while [[ $(oc get statefulset mas-mongo-ce -n ${MONGO_NAMESPACE} --ignore-not-found -o 'jsonpath={..status.readyReplicas}') != "1" ]];do sleep 5s; done
