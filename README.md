@@ -1,2 +1,3 @@
 # mas-standalone-installation
-Installation Scripts for Maximo Application Suite
+
+Installation scripts for Maximo Application Suite 8.4 on Red Hat CodeReady Containers
