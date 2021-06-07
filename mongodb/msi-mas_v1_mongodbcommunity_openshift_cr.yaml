@@ -4,7 +4,7 @@ kind: MongoDBCommunity
 metadata:
   name: mas-mongo-ce
 spec:
-  members: 3
+  members: 1
   type: ReplicaSet
   version: "4.2.6"
   security:
@@ -39,3 +39,22 @@ spec:
     spec:
       serviceName: mas-mongo-ce-svc
       selector: {}
+      template:
+        spec:
+          containers:
+            - name: "mongodb-agent"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 48M
+                limits:
+                  cpu: 1000m
+                  memory: 500M
+            - name: "mongod"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64M
+                limits:
+                  cpu: 1000m
+                  memory: 2048M

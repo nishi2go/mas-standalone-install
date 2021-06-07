@@ -96,10 +96,6 @@ spec:
     nodes:
       - host: mas-mongo-ce-0.mas-mongo-ce-svc.mongo.svc.cluster.local
         port: 27017
-      - host: mas-mongo-ce-1.mas-mongo-ce-svc.mongo.svc.cluster.local
-        port: 27017
-      - host: mas-mongo-ce-2.mas-mongo-ce-svc.mongo.svc.cluster.local
-        port: 27017
     secretName: sls-mongo-credentials
     certificates:
       - alias: mongodb
