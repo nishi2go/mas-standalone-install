@@ -7,12 +7,10 @@ SCRIPT_DIR=$(
   pwd
 )
 
+source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
 function stepLog() {
   echo -e "STEP $1/3: $2"
 }
-
-source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
-source "${SCRIPT_DIR}/util.sh"
 
 status=$(oc whoami 2>&1)
 if [[ $? -gt 0 ]]; then
@@ -43,7 +41,7 @@ oc get secret bas-api-key -n "${projectName}" --output="jsonpath={.data.apikey}"
 echo ""
 
 echo "===========Certificates=============="
-oc get secret event-api-certs -n "${projectName}" -o "jsonpath={.data.tls\.crt}" | base64 -d
+oc get secret router-certs-default -n "openshift-ingress" -o "jsonpath={.data.tls\.crt}" | base64 -d
 
 displayStepHeader 3 "SLS Setup Parameters"
 
