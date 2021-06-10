@@ -13,6 +13,7 @@ if [ -z "$MONGO_NAMESPACE" ]; then
   MONGO_NAMESPACE="mongo"
 fi
 
+mkdir -p logs
 WORK_DIR="${SCRIPT_DIR}/work"
 DATETIME=`date +%Y%m%d_%H%M%S`
 

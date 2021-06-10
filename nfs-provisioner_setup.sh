@@ -12,6 +12,7 @@ function stepLog() {
 
 DATETIME=`date +%Y%m%d_%H%M%S`
 
+mkdir -p logs
 logFile="${SCRIPT_DIR}/logs/nfs-provisioner-installation-${DATETIME}.log"
 touch "${logFile}"
 

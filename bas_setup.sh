@@ -5,6 +5,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
 
+mkdir -p logs
 WORK_DIR="${SCRIPT_DIR}/work/bas"
 
 mkdir -p "${WORK_DIR}"
