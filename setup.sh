@@ -14,7 +14,6 @@ rm -rf work/*
 ./local-path_setup.sh
 ./sb_setup.sh
 ./mongo_setup.sh
-./sb_setup.sh
 ./cert-manager_setup.sh
 ./bas_setup.sh
 ./sls_setup.sh
