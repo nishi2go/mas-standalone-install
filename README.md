@@ -2,6 +2,9 @@
 
 Prereq software installation scripts for Maximo Application Suite 8.4 on Red Hat CodeReady Containers
 
+Detailed instructions here:
+https://www.linkedin.com/pulse/running-maximo-manage-stand-alone-openshift-server-red-nishimura/
+
 Usage:
 
 ```shell
