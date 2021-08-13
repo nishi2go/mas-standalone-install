@@ -40,6 +40,10 @@ spec:
   startingCSV: service-binding-operator.v0.8.0
 EOF
 
+installplan=$(oc get installplan -n openshift-operators | grep -i service-binding | awk '{print $1}')
+
+oc patch installplan ${installplan} -n openshift-operators --type merge --patch '{"spec":{"approved":true}}'
+
 displayStepHeader 2 "Verify Service Binding Operator installation"
 operatorName="service-binding-operator"
 check_for_csv_success=$(checkOperatorInstallationSucceeded 2>&1)
