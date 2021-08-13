@@ -97,6 +97,7 @@ spec:
     nodes:
       - host: mas-mongo-ce-0.mas-mongo-ce-svc.mongo.svc.cluster.local
         port: 27017
+    retryWrites: true
     secretName: sls-mongo-credentials
     certificates:
       - alias: mongodb
@@ -124,4 +125,4 @@ spec:
 EOF
 
 displayStepHeader 8 "Wait License Service instance ready."
-while [[ $(oc get -n ibm-sls licenseservice | grep sls | tr -s " " | cut -d' ' -f 3) != "True" ]]; do sleep 5s; done
+while [[ $(oc get -n ${projectName} licenseservice | grep sls | tr -s " " | cut -d' ' -f 3) != "True" ]]; do sleep 5s; done
