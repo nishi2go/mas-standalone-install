@@ -32,10 +32,12 @@ metadata:
   name: rh-service-binding-operator
   namespace: openshift-operators
 spec:
-  channel: beta
+  channel: preview
   name: rh-service-binding-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
+  installPlanApproval: Manual
+  startingCSV: service-binding-operator.v0.8.0
 EOF
 
 displayStepHeader 2 "Verify Service Binding Operator installation"
