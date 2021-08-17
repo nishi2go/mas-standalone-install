@@ -47,7 +47,7 @@ csvInstalled=$(oc get csv -n "${projectName}" --ignore-not-found | awk '$1 ~ /se
 while [[ "${csvInstalled}" != "Succeeded" ]]; do
   installplan=$(oc get installplan -n openshift-operators | grep -i service-binding | awk '{print $1}' | head -n 1)
 
-  if [[ "${installPlan}" != "" ]]; then
+  if [[ "${installplan}" != "" ]]; then
     oc patch installplan ${installplan} -n openshift-operators --type merge --patch '{"spec":{"approved":true}}'
     break
   else
