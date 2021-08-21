@@ -76,7 +76,7 @@ stringData:
 EOF
 
 displayStepHeader 7 "Create License Service instance."
-MONGO_CERT=$(oc get configmap mas-mongo-ce-cert-map -n mongo -o jsonpath='{.data.ca\.crt}' | sed -E  ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
+MONGO_CERT=$(oc get configmap mas-mongo-ce-cert-map -n mongo -o jsonpath='{.data.ca\.crt}' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
 cat <<EOF | oc apply -f - | tee -a "${logFile}"
 apiVersion: sls.ibm.com/v1
 kind: LicenseService
@@ -125,4 +125,4 @@ spec:
 EOF
 
 displayStepHeader 8 "Wait License Service instance ready."
-while [[ $(oc get -n ${projectName} licenseservice | grep sls | tr -s " " | cut -d' ' -f 3) != "True" ]]; do sleep 5s; done
+while [[ $(oc get -n ${projectName} licenseservice | grep sls | tr -s " " | cut -d' ' -f 2) != "Ready" ]]; do sleep 5s; done
