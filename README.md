@@ -17,7 +17,7 @@ $ crc config set disable-update-check true
 $ crc start
 $ eval $(crc oc-env)
 $ oc login -u kubeadmin -p ************ https://api.crc.testing:6443
-$ git clone --recursive https://github.com/nishi2go/mas-standalone-installation
+$ git clone --recursive https://github.com/nishi2go/mas-standalone-install
 $ cd mas-standalone-installation
 $ export ENTITLEMENT_KEY=<Your Entitlement Key> # Get from https://myibm.ibm.com/products-services/containerlibrary
 $ sh setup.sh
