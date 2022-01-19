@@ -1,7 +1,10 @@
 #!/bin/bash
 
 ## This Script installs BAS operator for MAS.
-SCRIPT_DIR=$(cd $(dirname $0); pwd)
+SCRIPT_DIR=$(
+  cd $(dirname $0)
+  pwd
+)
 
 source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
 
@@ -13,14 +16,14 @@ mkdir -p "${WORK_DIR}"
 cp -r "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/"* "${WORK_DIR}/"
 
 if [ -z "${BAS_DB_PASSWORD}" ]; then
-  BAS_DB_PASSWORD=`openssl rand -hex 15`
+  BAS_DB_PASSWORD=$(openssl rand -hex 15)
 fi
 
 if [ -z "${BAS_GRAFANA_PASSWORD}" ]; then
-  BAS_GRAFANA_PASSWORD=`openssl rand -hex 15`
+  BAS_GRAFANA_PASSWORD=$(openssl rand -hex 15)
 fi
 
-cat <<EOF > "${WORK_DIR}/cr.properties"
+cat <<EOF >"${WORK_DIR}/cr.properties"
 projectName="bas"
 storageClassKafka="local-path"
 storageClassZookeeper="local-path"
@@ -45,7 +48,7 @@ EOF
 
 cd "${WORK_DIR}/"
 
-sed -i -e "s/retryCount=20/retryCount=120/" -e "/read -r continueInstall/d" "${WORK_DIR}/bas-script-functions.bash"
+sed -i -e "s/retryCount=20/retryCount=300/" -e "/read -r continueInstall/d" "${WORK_DIR}/bas-script-functions.bash"
 
 export continueInstall=Y
 

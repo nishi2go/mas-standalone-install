@@ -49,9 +49,9 @@ displayStepHeader 4 "Verify IBM Suite License Service installation"
 check_for_csv_success=$(checkOperatorInstallationSucceeded 2>&1)
 
 if [[ "${check_for_csv_success}" == "Succeeded" ]]; then
-  echoGreen "IBM Suite License Services Operator installed"
+  echoGreen "IBM Suite License Service Operator installed"
 else
-  echoRed "IBM Suite License Services Operator installation failed."
+  echoRed "IBM Suite License Service Operator installation failed."
   exit 1
 fi
 

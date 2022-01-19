@@ -35,12 +35,12 @@ metadata:
   name: rh-service-binding-operator
   namespace: openshift-operators
 spec:
-  channel: preview
+  channel: beta
   name: rh-service-binding-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   installPlanApproval: Manual
-  startingCSV: service-binding-operator.v0.8.0
+  startingCSV: service-binding-operator.v0.9.1
 EOF
 
 csvInstalled=$(oc get csv -n "${projectName}" --ignore-not-found | awk '$1 ~ /service-binding-operator/ { print }' | awk -F' ' '{print $NF}')
