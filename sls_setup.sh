@@ -46,7 +46,15 @@ operatorName="ibm-sls"
 oc apply -n "${projectName}" -f "${SCRIPT_DIR}/suite-license-services/sls-operator-subscription.yaml" | tee -a "${logFile}"
 
 displayStepHeader 4 "Verify IBM Suite License Service installation"
-check_for_csv_success=$(checkOperatorInstallationSucceeded 2>&1)
+#check_for_csv_success=$(checkOperatorInstallationSucceeded 2>&1)
+retryCount=120
+retries=0
+check_for_csv_success=$(oc get csv -n "$projectName" --ignore-not-found | grep --color=never "${operatorName}" | awk -F' ' '{print $NF}')
+until [[ $retries -eq $retryCount || $check_for_csv_success = "Succeeded" ]]; do
+  sleep 5
+  check_for_csv_success=$(oc get csv -n "$projectName" --ignore-not-found | grep --color=never "${operatorName}" | awk -F' ' '{print $NF}')
+  retries=$((retries + 1))
+done
 
 if [[ "${check_for_csv_success}" == "Succeeded" ]]; then
   echoGreen "IBM Suite License Service Operator installed"
@@ -125,4 +133,4 @@ spec:
 EOF
 
 displayStepHeader 8 "Wait License Service instance ready."
-while [[ $(oc get -n ${projectName} licenseservice | grep sls | tr -s " " | cut -d' ' -f 2) != "Ready" ]]; do sleep 5s; done
+while [[ $(oc get -n ${projectName} licenseservice -o=jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do sleep 5s; done
