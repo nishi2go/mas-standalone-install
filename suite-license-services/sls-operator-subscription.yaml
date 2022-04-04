@@ -17,4 +17,3 @@ spec:
   name: ibm-sls
   source: ibm-operator-catalog
   sourceNamespace: openshift-marketplace
-  startingCSV: ibm-sls.v3.2.4

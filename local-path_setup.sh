@@ -1,39 +1,28 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## This Script installs local path service for MAS based on https://github.com/code-ready/crc/wiki/Dynamic-volume-provisioning
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
-source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
 source "${SCRIPT_DIR}/util.sh"
-
-function stepLog() {
-  echo -e "STEP $1/4: $2"
-}
-
-DATETIME=`date +%Y%m%d_%H%M%S`
-
-mkdir -p logs
-logFile="${SCRIPT_DIR}/logs/local-path-installation-${DATETIME}.log"
-touch "${logFile}"
 
 status=$(oc whoami 2>&1)
 if [[ $? -gt 0 ]]; then
-    echoRed "Login to OpenShift to continue local-path installation."
-        exit 1;
+    echo "Login to OpenShift to continue local-path installation."
+    exit 1;
 fi
 
-displayStepHeader 1 "Create namespace for local-path-storage."
+echo "--- Create namespace for local-path-storage."
 projectName="local-path-storage"
 createProject
 
-displayStepHeader 2 "Create service account for local-path-storage"
-oc create serviceaccount local-path-provisioner-service-account -n "${projectName}" | tee -a "${logFile}"
+echo "--- Create service account for local-path-storage"
+oc create serviceaccount local-path-provisioner-service-account -n "${projectName}" 
 
-displayStepHeader 3 "Configure adm policy for local-path-storage"
-oc adm policy add-scc-to-user hostaccess -z local-path-provisioner-service-account -n "${projectName}" | tee -a "${logFile}"
+echo "--- Configure adm policy for local-path-storage"
+oc adm policy add-scc-to-user hostaccess -z local-path-provisioner-service-account -n "${projectName}" 
 
-displayStepHeader 4 "Create service account for local-path-storage"
-cat <<EOF | oc apply -f - | tee -a "${logFile}"
+echo "--- Create service account for local-path-storage"
+cat <<EOF | oc apply -n "${projectName}" -f - 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

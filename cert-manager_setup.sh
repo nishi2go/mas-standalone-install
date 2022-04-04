@@ -1,29 +1,49 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-## This Script installs cert manager for MAS.
-SCRIPT_DIR=$(cd $(dirname $0); pwd)
+## This Script installs ibm cert manager operator 
+SCRIPT_DIR=$(
+  cd $(dirname $0)
+  pwd
+)
 
-source "${SCRIPT_DIR}/behavior-analytics-services/Installation Scripts/bas-script-functions.bash"
-
-function stepLog() {
-  echo -e "STEP $1/2: $2"
-}
-
-DATETIME=`date +%Y%m%d_%H%M%S`
-
-mkdir -p logs
-logFile="${SCRIPT_DIR}/logs/cert-manager-installation-${DATETIME}.log"
-touch "${logFile}"
+source "${SCRIPT_DIR}/util.sh"
 
 status=$(oc whoami 2>&1)
 if [[ $? -gt 0 ]]; then
-    echoRed "Login to OpenShift to continue Cert manager Operator installation."
-        exit 1;
+  echo "Login to OpenShift to continue installation." 1>&2
+  exit 1
 fi
 
-displayStepHeader 1 "Create cert-manager namespace."
-oc create namespace cert-manager | tee -a ${logFile}
+echo "--- Check IBM Common Services installed"
+if [[ ! $(oc get crd operandrequests.operator.ibm.com 2> /dev/null) ]]; then
+  echo "IBM Common Services not found." 1>&2
+  exit 1
+fi
 
-displayStepHeader 2 "Install Cert Manager."
-oc apply -f https://github.com/jetstack/cert-manager/releases/download/v1.1.1/cert-manager.yaml | tee -a ${logFile}
+echo "--- Install Cert Manager"
+cat <<EOF | oc apply -f -
+---
+apiVersion: operator.ibm.com/v1alpha1
+kind: OperandRequest
+metadata:
+  name: common-service
+  namespace: ibm-common-services
+spec:
+  requests:
+    - operands:
+        - name: ibm-cert-manager-operator
+      registry: common-service
+EOF
 
+echo "--- Verify Cert Manager installation"
+cmd="oc get subscription -n ibm-common-services ibm-cert-manager-operator --ignore-not-found=true -o jsonpath={.status.currentCSV}"
+waitUntilAvailable "${cmd}"
+csv=$(${cmd})
+cmd="oc get csv -n ibm-common-services ${csv} --ignore-not-found=true -o jsonpath={.status.phase}"
+state="Succeeded"
+waitUntil "${cmd}" "${state}"
+cmd="oc get CertManager default --ignore-not-found=true -o jsonpath={.status.certManagerStatus}"
+state="Successfully deployed cert-manager"
+waitUntil "${cmd}" "${state}"
+
+echo "Done."
