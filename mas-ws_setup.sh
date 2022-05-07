@@ -109,10 +109,10 @@ ${MONGO_NODES}
 EOF
 
 echo "--- Install UDS Config for MAS"
+UDS_NAMESPACE="ibm-common-services"
 UDS_URL=$(echo -n https://$(oc get routes uds-endpoint -n "${UDS_NAMESPACE}" |awk 'NR==2 {print $2}'))
 UDS_APIKEY=$(oc get secret uds-api-key -n "${UDS_NAMESPACE}" --output="jsonpath={.data.apikey}" | base64 -d)
 UDS_CERT1=$(oc get secret router-certs-default -n "openshift-ingress" -o "jsonpath={.data.tls\.crt}" | base64 -d | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
-UDS_NAMESPACE="ibm-common-services"
 
 cat <<EOF | oc apply -f - 
 ---
