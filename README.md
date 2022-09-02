@@ -1,6 +1,6 @@
 # Setup scripts for Maximo Application Suite on Redhat CodeReady Containers
 
-```mas-standalone-install``` is installation scripts for Maximo Application Suite (MAS) 8.7 on Red Hat CodeReady Containers (CRC). This script enables to install all prereqs, MongoDB, UDS, SLS, cert-manager, service binding operator, and MAS core on CRC env. The required parameter is an entitlement key for IBM Container Registry only. The other parameters for installing MAS on CRC are configured by default. If you want to setup prereqs on a small OpenShift environment without exaggerated configurations, you can use this scripts with custom variables for your environment. Please consider [Ansible scripts](https://ibm-mas.github.io/ansible-devops) or any other tools for large projects.
+```mas-standalone-install``` is installation scripts for Maximo Application Suite (MAS) 8.7 on Red Hat CodeReady Containers (CRC). This scripts enable to install all prereqs, MongoDB, UDS, SLS, cert-manager, service binding operator, and MAS core on CRC env. An entitlement key for IBM Container Registry is a only required parameter for MAS core installation. No need the other parametersand they are configured by default for CRC. If you want to setup prereqs on a small OpenShift environment without exaggerated configurations, you can use this scripts with custom variables for your environment. Please consider [Ansible scripts](https://ibm-mas.github.io/ansible-devops) or any other tools for large projects.
 
 Detailed for the scripts here: https://www.linkedin.com/pulse/running-maximo-manage-stand-alone-openshift-server-red-nishimura/
 
@@ -11,7 +11,7 @@ Disclaimer: I (and also IBM) do NOT support running the MAS on CRC with this gui
 Install CRC, prereqs, and MAS Core.
 
 ```shell
-$ sudo yumupdate && yum install jq git
+$ sudo yum update && yum install jq git
 $ crc setup
 $ crc config set cpus 12
 $ crc config set memory 32000
