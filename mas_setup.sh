@@ -103,7 +103,7 @@ state="Succeeded"
 waitUntil "${cmd}" "${state}"
 
 echo "--- Wait IBM Common Service installation"
-operatorName=ibm-common-service-operator-v3-ibm-operator-catalog-openshift-marketplace
+operatorName=ibm-common-service-operator-v3.20-ibm-operator-catalog-openshift-marketplace
 cmd="oc get subscription -n ${projectName} ${operatorName} --ignore-not-found=true -o jsonpath={.status.currentCSV}"
 waitUntilAvailable "${cmd}"
 csv=$(${cmd})
