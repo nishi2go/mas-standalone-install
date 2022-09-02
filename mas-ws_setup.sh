@@ -9,52 +9,56 @@ SCRIPT_DIR=$(
 source "${SCRIPT_DIR}/util.sh"
 
 if [ -z "${UDS_EMAIL}" ]; then
-    echo "Missing email address in environemnt variable UDS_EMAIL." 1>&2
-    exit 1
+  echo "Missing email address in environemnt variable UDS_EMAIL." 1>&2
+  exit 1
 fi
 
 if [ -z "${UDS_LASTNAME}" ]; then
-    echo "Missing last name in environemnt variable UDS_LASTNAME." 1>&2
-    exit 1
+  echo "Missing last name in environemnt variable UDS_LASTNAME." 1>&2
+  exit 1
 fi
 
 if [ -z "${UDS_FIRSTNAME}" ]; then
-    echo "Missing first name in environemnt variable UDS_FIRSTNAME." 1>&2
-    exit 1
+  echo "Missing first name in environemnt variable UDS_FIRSTNAME." 1>&2
+  exit 1
+fi
+
+if [ -z "$UDS_NAMESPACE" ]; then
+  UDS_NAMESPACE="ibm-common-services"
 fi
 
 if [ -z "$SLS_NAMESPACE" ]; then
-    SLS_NAMESPACE="ibm-sls"
+  SLS_NAMESPACE="ibm-sls"
 fi
 
 if [ -z "${MAS_INSTANCE_ID}" ]; then
-    MAS_INSTANCE_ID="crc"
+  MAS_INSTANCE_ID="crc"
 fi
 
 if [ -z "${MAS_WORKSPACE_ID}" ]; then
-    MAS_WORKSPACE_ID="dev"
+  MAS_WORKSPACE_ID="dev"
 fi
 
 if [ -z "${MAS_WORKSPACE_NAME}" ]; then
-    MAS_WORKSPACE_NAME="Maximo dev"
+  MAS_WORKSPACE_NAME="Maximo dev"
 fi
 
 if [ -z "${MAS_DOMAIN_NAME}" ]; then
-    MAS_DOMAIN_NAME="mas.apps-crc.testing"
+  MAS_DOMAIN_NAME="mas.apps-crc.testing"
 fi
 
 if [ -z "$MONGODB_NAMESPACE" ]; then
-    MONGODB_NAMESPACE="mongodb"
+  MONGODB_NAMESPACE="mongodb"
 fi
 
 if [ -z "${MONGODB_REPLICAS}" ]; then
-    MONGODB_REPLICAS=3
+  MONGODB_REPLICAS=3
 fi
 
 status=$(oc whoami 2>&1)
 if [[ $? -gt 0 ]]; then
-    echo "Login to OpenShift to continue installation." 1>&2
-    exit 1
+  echo "Login to OpenShift to continue installation." 1>&2
+  exit 1
 fi
 
 echo "--- Set up the project"
@@ -66,7 +70,7 @@ MONGO_PASSWORD=$(oc get secret mas-mongo-ce-admin-password -n ${MONGODB_NAMESPAC
 MONGO_CERT=$(oc get configmap mas-mongo-ce-cert-map -n ${MONGODB_NAMESPACE} -o jsonpath='{.data.ca\.crt}' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
 MONGO_NODES=""
 for i in $(seq 0 $((${MONGODB_REPLICAS} - 1))); do
-    MONGO_NODES="${MONGO_NODES}\n      - host: mas-mongo-ce-${i}.mas-mongo-ce-svc.${MONGODB_NAMESPACE}.svc.cluster.local\n        port: 27017\n"
+  MONGO_NODES="${MONGO_NODES}\n      - host: mas-mongo-ce-${i}.mas-mongo-ce-svc.${MONGODB_NAMESPACE}.svc.cluster.local\n        port: 27017\n"
 done
 MONGO_NODES=$(echo -ne "${MONGO_NODES}")
 
@@ -105,16 +109,15 @@ ${MONGO_NODES}
       secretName: "${MAS_INSTANCE_ID}-mongodb-admin"
   certificates:
     - alias: mongodbca
-      crt: "${MONGO_CERT}" 
+      crt: "${MONGO_CERT}"
 EOF
 
 echo "--- Install UDS Config for MAS"
-UDS_NAMESPACE="ibm-common-services"
-UDS_URL=$(echo -n https://$(oc get routes uds-endpoint -n "${UDS_NAMESPACE}" |awk 'NR==2 {print $2}'))
+UDS_URL=$(echo -n https://$(oc get routes uds-endpoint -n "${UDS_NAMESPACE}" | awk 'NR==2 {print $2}'))
 UDS_APIKEY=$(oc get secret uds-api-key -n "${UDS_NAMESPACE}" --output="jsonpath={.data.apikey}" | base64 -d)
 UDS_CERT1=$(oc get secret router-certs-default -n "openshift-ingress" -o "jsonpath={.data.tls\.crt}" | base64 -d | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
 
-cat <<EOF | oc apply -f - 
+cat <<EOF | oc apply -f -
 ---
 apiVersion: v1
 kind: Secret
@@ -124,6 +127,9 @@ metadata:
   namespace: "${projectName}"
 stringData:
   api_key: "${UDS_APIKEY}"
+EOF
+
+cat <<EOF | oc apply -f -
 ---
 apiVersion: config.mas.ibm.com/v1
 kind: BasCfg
@@ -139,7 +145,7 @@ metadata:
 spec:
   certificates:
     - alias: uds-crt1
-      crt: "${UDS_CERT1}" 
+      crt: "${UDS_CERT1}"
   config:
     contact:
       email: "${UDS_EMAIL}"
@@ -156,7 +162,7 @@ SLS_URL=$(oc get configmap -n "${SLS_NAMESPACE}" sls-suite-registration -o jsonp
 SLS_KEY=$(oc get configmap -n "${SLS_NAMESPACE}" sls-suite-registration -o jsonpath='{.data.registrationKey}')
 SLS_CERT=$(oc get configmap -n "${SLS_NAMESPACE}" sls-suite-registration -o jsonpath='{.data.ca}' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g')
 
-cat <<EOF | oc apply -f - 
+cat <<EOF | oc apply -f -
 ---
 apiVersion: v1
 kind: Secret
@@ -211,29 +217,29 @@ waitUntil "${cmd}" "${state}"
 
 echo "--- Wait SLS config completion"
 if [ -v SLS_LICENSE_FILE ]; then
-    echo "--- Upload SLS lisence file"
-    WORK_DIR="${SCRIPT_DIR}/work"
-    mkdir -p "${WORK_DIR}"
-    oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.tls\.key}' | base64 -d -w 0 > ${WORK_DIR}/tls.key
-    oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.tls\.crt}' | base64 -d -w 0 > ${WORK_DIR}/tls.crt
-    oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.ca\.crt}' | base64 -d -w 0 > ${WORK_DIR}/ca.crt
-    curl -ks --cert ${WORK_DIR}/tls.crt --key ${WORK_DIR}/tls.key --cacert ${WORK_DIR}/ca.crt -X PUT -F "file=@${SLS_LICENSE_FILE}" $(oc get configmap -n ${SLS_NAMESPACE} sls-suite-registration -o jsonpath='{.data.url}')/api/entitlement/file
-    curl -ks --cert ${WORK_DIR}/tls.crt --key ${WORK_DIR}/tls.key --cacert ${WORK_DIR}/ca.crt $(oc get configmap -n ${SLS_NAMESPACE} sls-suite-registration -o jsonpath='{.data.url}')/api/tokens | jq '.[0]'
-    rm -r ${WORK_DIR}
-    echo ""
+  echo "--- Upload SLS lisence file"
+  WORK_DIR="${SCRIPT_DIR}/work"
+  mkdir -p "${WORK_DIR}"
+  oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.tls\.key}' | base64 -d -w 0 >${WORK_DIR}/tls.key
+  oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.tls\.crt}' | base64 -d -w 0 >${WORK_DIR}/tls.crt
+  oc get secret -n ${SLS_NAMESPACE} sls-cert-client -o jsonpath='{.data.ca\.crt}' | base64 -d -w 0 >${WORK_DIR}/ca.crt
+  curl -ks --cert ${WORK_DIR}/tls.crt --key ${WORK_DIR}/tls.key --cacert ${WORK_DIR}/ca.crt -X PUT -F "file=@${SLS_LICENSE_FILE}" $(oc get configmap -n ${SLS_NAMESPACE} sls-suite-registration -o jsonpath='{.data.url}')/api/entitlement/file
+  curl -ks --cert ${WORK_DIR}/tls.crt --key ${WORK_DIR}/tls.key --cacert ${WORK_DIR}/ca.crt $(oc get configmap -n ${SLS_NAMESPACE} sls-suite-registration -o jsonpath='{.data.url}')/api/tokens | jq '.[0]'
+  rm -r ${WORK_DIR}
+  echo ""
 
-    cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"SLSIntegrationReady\")].status}"
-    state="True"
-    waitUntil "${cmd}" "${state}"
+  cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"SLSIntegrationReady\")].status}"
+  state="True"
+  waitUntil "${cmd}" "${state}"
 
-    cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"Ready\")].status}"
-    state="True"
-    waitUntil "${cmd}" "${state}"
+  cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"Ready\")].status}"
+  state="True"
+  waitUntil "${cmd}" "${state}"
 else
-    cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"SLSIntegrationReady\")].reason}"
-    state="MissingLicenseFile"
-    waitUntil "${cmd}" "${state}"
-    echo "Put your license file to enable MAS workspece."
+  cmd="oc get suite.core.mas.ibm.com ${MAS_INSTANCE_ID} -n ${projectName} -o jsonpath={.status.conditions[?(@.type==\"SLSIntegrationReady\")].reason}"
+  state="MissingLicenseFile"
+  waitUntil "${cmd}" "${state}"
+  echo "Put your license file to enable MAS workspece."
 fi
 
 echo "--- Wait UDS config completion"
